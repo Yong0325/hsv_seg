@@ -9,9 +9,18 @@ import cv2
 import numpy as np
 import os
 from numba import vectorize, jit, float64
+import getopt
+import sys
+
+opts, args = getopt.getopt(sys.argv[1:], '-i:-o:')
+for opt_name, opt_value in opts:
+    if opt_name == '-i':
+        input_path = opt_value
+    if opt_name == '-o':
+        output_path = opt_value
 
 el = cv2.getTickCount()
-cap = cv2.VideoCapture("in.mp4")
+cap = cv2.VideoCapture(input_path)
 fourcc = int(cap.get(cv2.CAP_PROP_FOURCC))
 width = int(cap.get(3))
 height = int(cap.get(4))
@@ -25,7 +34,6 @@ m = 0.7  # 相似度阈值
 h_H = np.zeros(361, dtype=int)
 s_S = np.zeros(11, dtype=int)
 v_V = np.zeros(11, dtype=int)
-
 
 # @vectorize(nopython=True)
 @jit(nopython=True)
@@ -105,7 +113,6 @@ def zhifang(h: np.array, s: np.array, v: np.array):
 
     return L
 
-
 def similar(L1, L2):
     re = 0
     # print(L1[1])
@@ -113,7 +120,6 @@ def similar(L1, L2):
         # print(L1[i])
         re += min(L1[i], L2[i])
     return re
-
 
 ret, frame = cap.read()  # 预处理第一帧
 if ret == True:
@@ -159,7 +165,7 @@ if ret == True:
     L = [[], []]
     L[pt1 % 2] = zhifang(h, s, v)
     pt1 += 1
-    name = 'shot_' + str(pt) + ".mp4"
+    name = output_path + '\\shot_' + str(pt) + ".mp4"
     out = cv2.VideoWriter(name, fourcc, fps, (width, height), True)
     out.write(frame)
 else:
@@ -181,7 +187,8 @@ while(cap.isOpened()):
         pt1 += 1
         if similar(L[0], L[1]) < m:
             pt += 1
-            name = 'shot_' + str(pt) + ".mp4"
+            # name = 'shot_' + str(pt) + ".mp4"
+            name = output_path + '\\shot_' + str(pt) + ".mp4"
             out = cv2.VideoWriter(name, fourcc, fps, (width, height), True)
             out.write(frame)
             print("切分")
