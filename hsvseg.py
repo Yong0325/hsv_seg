@@ -26,7 +26,8 @@ width = int(cap.get(3))
 height = int(cap.get(4))
 pix = width * height
 fps = cap.get(5)
-print(cap.get(7))  # 打印总帧数
+tot_frame = cap.get(7)
+print(tot_frame)  # 打印总帧数
 pt = 0  # 指明目前子视频数
 pt1 = 0  # 指明目前帧数
 m = 0.7  # 相似度阈值
@@ -172,7 +173,8 @@ else:
     print("无法打开文件！")
     os.system("pause")
     exit()
-while(cap.isOpened()):
+
+while(pt1 < tot_frame):
     ret, frame = cap.read()
     if ret == True:
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -189,11 +191,13 @@ while(cap.isOpened()):
             pt += 1
             # name = 'shot_' + str(pt) + ".mp4"
             name = output_path + '\\shot_' + str(pt) + ".mp4"
+            # os.system('ffmpeg -i \"' + output_path + '\\shot_' + str(pt - 1) + '.mp4\" -b:v 1M \"' + output_path + '\\shot' + str(pt - 1) + '.mp4\"')
+            # print('ffmpeg -i \'' + output_path + '\\shot_' + str(pt - 1) + '.mp4\' -b:v 1M \'' + output_path + '\\shot' + str(pt - 1) + '.mp4\'')
             out = cv2.VideoWriter(name, fourcc, fps, (width, height), True)
             out.write(frame)
             print("切分")
             print(pt1)
-            print(name)
+            # print(name)
         else:
             out.write(frame)
             print(pt1)
@@ -205,7 +209,13 @@ while(cap.isOpened()):
         print("结束")
         break
     '''
+
 cap.release()
+out.release()
+for i in range(pt + 1):
+    os.system('ffmpeg -i \"' + output_path + '\\shot_' + str(i) + '.mp4\" -b:v 1M \"' + output_path + '\\shot-' + str(i) + '.mp4\"')
+    os.system('rm \"' + output_path + '\\shot_' + str(i) + '.mp4\"')
+
 # out.release()
 e2 = cv2.getTickCount()
 # print((e2.el)/cv2.getTickFrequency)
